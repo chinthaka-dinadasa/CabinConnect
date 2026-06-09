@@ -25,11 +25,20 @@ export function LogoutButton() {
   }
 
   return (
-    <div>
-      <button type="button" onClick={handleLogout} disabled={loading}>
+    <div className="flex flex-col items-end">
+      <button
+        type="button"
+        onClick={handleLogout}
+        disabled={loading}
+        className="bg-primary text-on-primary px-md py-sm rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         {loading ? 'Logging out…' : 'Log out'}
       </button>
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p role="alert" className="font-body-sm text-body-sm text-error mt-xs">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
