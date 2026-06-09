@@ -1,4 +1,5 @@
 import type { User } from '@supabase/supabase-js'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { LogoutButton } from '../components/logout-button'
 
@@ -37,9 +38,15 @@ export default function DashboardPage() {
           <h1 className="font-headline-xl text-headline-xl text-primary mb-md break-all">
             {getWelcomeName(user)}
           </h1>
-          <p className="font-body-md text-body-md text-secondary">
+          <p className="font-body-md text-body-md text-secondary mb-lg">
             Your cabin hub is ready.
           </p>
+          <Link
+            to="/register-cabin"
+            className="inline-block bg-primary text-on-primary py-md px-lg rounded-lg font-label-md text-label-md transition-all hover:opacity-90 active:scale-[0.98]"
+          >
+            Register Cabin
+          </Link>
         </div>
       </main>
     </div>

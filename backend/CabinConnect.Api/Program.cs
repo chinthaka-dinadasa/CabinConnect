@@ -1,8 +1,8 @@
 using CabinConnect.Api.Data;
+using CabinConnect.Api.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +10,9 @@ var corsOriginsRaw = builder.Configuration["CORS_ALLOWED_ORIGINS"]
     ?? throw new InvalidOperationException(
         "Required environment variable 'CORS_ALLOWED_ORIGINS' is not set.");
 
-var jwtSecret = builder.Configuration["SUPABASE_JWT_SECRET"]
+var supabaseUrl = builder.Configuration["SUPABASE_URL"]
     ?? throw new InvalidOperationException(
-        "Required environment variable 'SUPABASE_JWT_SECRET' is not set.");
+        "Required environment variable 'SUPABASE_URL' is not set.");
 
 var databaseUrl = builder.Configuration["DATABASE_URL"]
     ?? throw new InvalidOperationException(
@@ -27,15 +27,14 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod()));
 
+// Supabase uses RS256 JWT Signing Keys. Authority points the middleware at the
+// JWKS endpoint so public keys are fetched and cached automatically.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Authority = $"{supabaseUrl.TrimEnd('/')}/auth/v1";
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
-            ValidAlgorithms = new List<string> { SecurityAlgorithms.HmacSha256 },
-            ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromMinutes(5)
@@ -44,6 +43,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddDbContext<CabinConnectDbContext>(options =>
     options.UseNpgsql(databaseUrl));
+
+builder.Services.AddScoped<ICabinRepository, CabinRepository>();
 
 builder.Services.AddControllers();
 
